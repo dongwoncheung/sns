@@ -15,6 +15,12 @@ public class UserBO {
 	public UserEntity getUserEntityByLoginId(String loginId) {
 		return userRepository.findByLoginId(loginId); 
 	}
+	//로그인을 하는 페이지 
+	// in: loginid , hashing password
+	// out: userentity(통째로 단건으로) null이거나 entity
+	public UserEntity getUserEntityByLoginIdPassword(String loginId, String password) {
+		return userRepository.findByLoginIdAndPassword(loginId, password);
+	}
 	// in: 4개의 파라미터들
 	// out: id(pk)
 	public Integer addUser(String loginId, String password, String name, String email) {
