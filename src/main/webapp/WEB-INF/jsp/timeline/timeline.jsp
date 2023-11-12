@@ -15,7 +15,7 @@
 					<%-- file 태그를 숨겨두고 이미지를 클릭하면 file 태그를 클릭한 효과 --%>
 					<input type="file" id="file" accept=".jpg, .png, .gif, .jpeg" class="d-none">
 					
-					<a href="#" id="fileUploadBtn"><img width="35" src="/static/568165.png"></a>
+					<a href="#" id="fileUploadBtn"><img width="35" src="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-image-512.png"></a>
 					
 					<%-- 업로드 된 임시 파일명 노출 --%>
 					<div id="fileName" class="ml-2"></div>
@@ -27,35 +27,49 @@
 		
 		<%-- 타임라인 영역 --%>
 		<div class="timeline-box my-5">
-			<c:forEach items="${postList}" var="post">
+			<c:forEach items="${cardList}" var="card">
 			<%-- 카드1 --%>
 			<div class="card border rounded mt-3">
 				<%-- 글쓴이, 더보기(삭제) --%>
 				<div class="p-2 d-flex justify-content-between">
-					<span class="font-weight-bold">${post.userId}</span>
+					<span class="font-weight-bold">${cardView.user.loginId}</span>
 					
-					<a href="#" class="more-btn">
+					<%--...더보기(내가 쓴 글일때만 노출(layer or modal) - 삭제 또는 수정--%>
+					<c:if test="${userId eq card.user.id}">
+					<a href="#" class="more-btn" data-toggle="modal" data-target="#modal" data-post-id="${card.post.id}">
 						<img src="https://www.iconninja.com/files/860/824/939/more-icon.png" width="30">
 					</a>
+					</c:if>
 				</div>	
 				
 				<%-- 카드 이미지 --%>
 				<div class="card-img">
-					<img src="${post.imagePath}" class="w-100" alt="본문 이미지">
+					<img src="${card.post.imagePath}" class="w-100" alt="본문 이미지">
 				</div>
 				
 				<%-- 좋아요 --%>
 				<div class="card-like m-3">
-					<a href="#" class="like-btn">
+				<%--로그인 x된 사람 + 좋아요를 누르지 않았을때(로그인된상태) = 빈하트 --%>
+					<c:if test="${card.filledLike eq false}">
+					<a href="#" class="like-btn" data-post-id="${card.post.id}">
 						<img src="https://www.iconninja.com/files/214/518/441/heart-icon.png" width="18" height="18" alt="filled heart">
 					</a>
-					좋아요 11개
+					</c:if>
+					<%--로그인되면서 좋아요를 누른적이있을때 채워진다 --%>
+					<c:if test="${card.filledLike}">
+					<a href="#" class="like-btn" data-post-id="${card.post.id}">
+						<img src="https://www.iconninja.com/files/527/809/128/heart-icon.png" width="18" height="18" alt="filled heart">
+					</a>
+					
+					</c:if>
+					
+					좋아요 ${card.likeCount}개
 				</div>
 				
 				<%-- 글 --%>
 				<div class="card-post m-3">
-					<span class="font-weight-bold">${post.userId}</span>
-					<span>${post.content}</span>
+					<span class="font-weight-bold">${card.user.loginId}</span>
+					<span>${card.post.content}</span>
 				</div>
 				
 				<%-- 댓글 제목 --%>
@@ -65,27 +79,48 @@
 				
 				<%-- 댓글 목록 --%>
 				<div class="card-comment-list m-2">
+				<c:forEach items="${card.commentList}" var="commentView">
 					<%-- 댓글 내용들 --%>
 					<div class="card-comment m-1">
-						<span class="font-weight-bold">댓글쓴이</span>
-						<span>댓글 내용</span>
+						<span class="font-weight-bold">${commentView.user.loginId}</span>
+						<span>${commentView.comment.content}</span>
 						
 						<%-- 댓글 삭제 버튼 --%>
-						<a href="#" class="comment-del-btn">
+						<%-- 로그인 된 사람과 댓글쓴이 일치 시 삭제 버튼 노출 --%>
+						<c:if test="${userId eq commentView.user.id}">
+						<a href="#" class="comment-del-btn" data-comment-id="${commentView.comment.id}">
 							<img src="https://www.iconninja.com/files/603/22/506/x-icon.png" width="10" height="10">
 						</a>
+						</c:if>
 					</div>
+				</c:forEach>
 					
 					<%-- 댓글 쓰기 --%>
 					<div class="comment-write d-flex border-top mt-2">
 						<input type="text" class="form-control border-0 mr-2 comment-input" placeholder="댓글 달기"/> 
-						<button type="button" class="comment-btn btn btn-light">게시</button>
+						<button type="button" class="comment-btn btn btn-light" data-post-id="${card.post.id}">게시</button>
 					</div>
 				</div> <%--// 댓글 목록 끝 --%>
 			</div> <%--// 카드1 끝 --%>
 			</c:forEach>
 		</div> <%--// 타임라인 영역 끝  --%>
 	</div> <%--// contents-box 끝  --%>
+</div>
+
+
+<!-- Modal창 -->
+<div class="modal fade" id="modal">
+	<%-- modal-sm:작은 모달, modal-dialog-centered:수직 기준 가운데 --%>
+	<div class="modal-dialog modal-dialog-centered modal-sm">
+		<div class="modal-content text-center">
+      		<div class="py-3 border-bottom">
+      			<a href="#" id="deletePostLink">삭제하기</a>
+      		</div>
+      		<div class="py-3">
+      			<a href="#" data-dismiss="modal">취소하기</a>
+      		</div>
+		</div>
+	</div>
 </div>
 
 <script>
@@ -164,6 +199,133 @@ $(document).ready(function() {
 				alert("글 저장에 실패했습니다. 관리자에게 문의해주세요.");
 			}
 		});  // --- ajax 끝
+	});
+	
+	// 댓글 쓰기
+	$('.comment-btn').on('click', function() {
+		//alert("aaaaa");
+		let postId = $(this).data('post-id'); // data-post-id=13
+		//alert(postId);
+		
+		// 댓글 내용 가져오기
+		// 1)
+		//let content = $(this).siblings("input").val().trim();// 자식을 가지고 이용하는 함수
+		
+		// 2)
+		let content = $(this).prev().val().trim(); // 버튼전에 하나전에 있는것을 가져온다
+		//alert(content);
+		
+		// ajax
+		$.ajax({
+			type:"post"
+			, url:"/comment/create"
+			, data:{"postId":postId, "content":content}
+		
+			, success:function(data) {
+				if (data.code == 200) {
+					location.reload(true);
+				} else if (data.code == 500) {
+					alert(data.errorMessage);
+					location.href = "/user/sign-in-view";
+				}
+			}
+			, error:function(request, status, error) {
+				alert("댓글 쓰기 실패했습니다.");
+			}
+		});
+	});
+	
+	// 댓글 삭제
+	$('.comment-del-btn').on('click', function(e) {
+		//alert("댓글 삭제 클릭");
+		e.preventDefault(); // a 태그의 위로 올라가는 현상 방지
+		
+		let commentId = $(this).data("comment-id");
+		//alert(commentId);
+		
+		$.ajax({
+			// request
+			type:"DELETE"
+			, url:"/comment/delete"
+			, data:{"commentId":commentId}
+			
+			// response
+			, success:function(data) {
+				if (data.code == 200) {
+					location.reload(true);
+				} else {
+					alert(data.errorMessage);
+				}
+			}
+			, error:function(request, status, error) {
+				alert("댓글 삭제 하는데 실패했습니다.");
+			}
+		});
+	});
+	
+	// 좋아요/해제
+	$('.like-btn').on('click', function(e) {
+		e.preventDefault();
+		//alert("라이크");
+		
+		let postId = $(this).data("post-id");
+		//alert(postId);
+		
+		$.ajax({
+			// request
+			url: "/like/" + postId
+			
+			// response
+			, success:function(data) {
+				if (data.code == 200) {
+					location.reload(true); // 새로고침 => timeline 다시 가져옴 -> 하트 채워지거나 or 비워지거나
+				} else if (data.code == 500) {
+					// 비로그인 상태
+					alert(data.errorMessage);
+					location.href = "/user/sign-in-view"; // 로그인 페이지로 이동
+				}
+			}
+			, error:function(request, status, error) {
+				alert("좋아요 하는데 실패했습니다.");
+			}
+		});
+	});
+	//글삭제(... 더보기 버튼 클릭)=> 모달 띄우기 => 모달 글번호 세팅
+	$(".more-btn").on("click",function(e){
+		e.preventDefault(); // a 태그 올라가는 현상을 방지-> form 형식으로 설정을 해놨으니
+		
+		
+		let postId = $(this).data("post-id");// ...버튼에 넣어둔 글번호 getting
+		//alert(postId);
+		
+		//1개인 모달 태그에 재활용. data-post-id를 심어줌
+		$("#modal").data("post-id", postId); // 모달 태그에 setting (postId -> ...에서 옮겨담은 아이디)
+		
+	});	
+	// 모달안에 있는 삭제 하기 클릭을 할떄 진짜 삭제를 시키는 방법
+	$("#modal #deletePostLink").on("click", function(e){
+		e.preventDefault();
+		
+		let postId = $("#modal").data("post-id"); // getting
+		//alert(postId);
+		
+		//ajax 글 삭제 요청
+		$.ajax({
+			type: "delete"
+			,url: "/post/delete"
+			,data:{"postId":postId}
+			,susccess:function(data)
+				if(data.code == 200){
+					location.reload(true);
+				}else{
+					alert(data.errorMessage)
+				}
+			}
+			, error:funtion(e){
+				alert("삭제 실패");
+			}
+		
+		});
 	});
 });
 </script>

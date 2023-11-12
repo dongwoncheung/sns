@@ -10,6 +10,10 @@ import com.sns.user.repository.UserRepository;
 public class UserBO {
 	@Autowired
 	private UserRepository userRepository;
+	// timelineBo에 userBo을 가져오는 방식
+	public UserEntity getUserEntityById(int userId) {
+		return userRepository.findById(userId).orElse(null); //optional = null 가능한것 / pk로 조회 // 모든 user다가져오지 않고 id로만 조회 가능
+	}
 	//input: loginid
 	//output: userentity(null이거나 entity)
 	public UserEntity getUserEntityByLoginId(String loginId) {
@@ -21,6 +25,7 @@ public class UserBO {
 	public UserEntity getUserEntityByLoginIdPassword(String loginId, String password) {
 		return userRepository.findByLoginIdAndPassword(loginId, password);
 	}
+	//회원가입을 하는 부분
 	// in: 4개의 파라미터들
 	// out: id(pk)
 	public Integer addUser(String loginId, String password, String name, String email) {

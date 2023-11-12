@@ -1,11 +1,13 @@
 package com.sns.common;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,5 +44,31 @@ public class FileManagerService {
 		// 주소는 이렇게 될 것이다.(예언)
 		// /images/aaaa_178945646/sun.png
 		return "/images/" + directoryName + "/" + file.getOriginalFilename();
+	}
+	//파일 삭제 매소드
+	//input: imagepath
+	//output: void
+	public void deleteFile(String imagePath) {// 이미지를 업로드 했던 파일을 삭제한다
+		
+		// 주소에 겹치는 /images/ 를 제거한다.
+		Path path = Paths.get(FILE_UPLOAD_PATH + imagePath.replace("/images/", ""));
+		if (Files.exists(path)) { // 이미지가 존재하는가?
+			// 이미지 삭제
+			try {
+				Files.delete(path);
+			} catch (IOException e) {
+				logger.info("###[FileManagerService 이미지 삭제 실패] imagePath:{}", imagePath);
+			}
+
+			// 디렉토리(폴더) 삭제
+			path = path.getParent();
+			if (Files.exists(path)) {
+				try {
+					Files.delete(path);
+				} catch (IOException e) {
+					logger.info("###[FileManagerService 이미지 폴더 삭제 실패] imagePath:{}", imagePath);
+				}
+			}
+		}
 	}
 }
