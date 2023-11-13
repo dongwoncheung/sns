@@ -309,22 +309,21 @@ $(document).ready(function() {
 		let postId = $("#modal").data("post-id"); // getting
 		//alert(postId);
 		
-		//ajax 글 삭제 요청
+		// ajax 글 삭제 요청
 		$.ajax({
-			type: "delete"
-			,url: "/post/delete"
-			,data:{"postId":postId}
-			,susccess:function(data)
-				if(data.code == 200){
+			type:"delete"
+			, url:"/post/delete"
+			, data: {"postId":postId}
+			, success: function(data) {
+				if (data.code == 200) {
 					location.reload(true);
-				}else{
-					alert(data.errorMessage)
+				} else {
+					alert(data.errorMessage);
 				}
 			}
-			, error:funtion(e){
-				alert("삭제 실패");
+			, error: function(e) {
+				alert("삭제하는데 실패했습니다. 관리자에게 문의해주세요.");
 			}
-		
 		});
 	});
 });
